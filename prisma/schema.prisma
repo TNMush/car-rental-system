@@ -12,3 +12,96 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile   Profile?
+}
+
+model Profile {
+  id                 String    @id @unique
+  user               User      @relation(fields: [id], references: [id])
+  name               String
+  profilePicture     String?
+  bio                String?
+  locationId         Int?
+  location           Location? @relation(fields: [locationId], references: [id])
+  proofOfResidence   String?
+  proofOfIdentity    String?
+  car                Car[]
+  rental             Rental[]
+  listings           Listing[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  verificationStatus Boolean   @default(false)
+}
+
+model Car {
+  owner               Profile  @relation(fields: [ownerId], references: [id])
+  id                  String   @id @default(uuid())
+  ownerId             String
+  make                String
+  model               String
+  type                String
+  year                Int
+  color               String
+  regNumber           String   @unique
+  frontView           String
+  backView            String
+  sideView            String?
+  proofOfRadioLicense String
+  proofOfInsurance    String
+  verificationStatus  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Listing {
+  id         String   @id @default(uuid())
+  listed     Profile  @relation(fields: [listedBy], references: [id])
+  listedBy   String
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  from       DateTime
+  upTo       DateTime
+  pricing    Decimal
+  rental     Rental[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Rental {
+  profile          Profile     @relation(fields: [renterId], references: [id])
+  id               String      @id @default(uuid())
+  listingId        String      @unique
+  renterId         String
+  listing          Listing     @relation(fields: [listingId], references: [id])
+  dateOfCollection DateTime
+  dateOfReturn     DateTime
+  priceCharged     Decimal
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  experience       Experience?
+}
+
+model Experience {
+  id        String   @id @default(uuid())
+  rental    Rental   @relation(fields: [rentalId], references: [id])
+  rentalId  String   @unique
+  rating    Int?
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id      Int       @id @default(autoincrement())
+  city    String
+  address String
+  profile Profile[]
+  listing Listing[]
+}
