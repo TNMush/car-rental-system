@@ -13,6 +13,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -23,41 +29,65 @@ model User {
 }
 
 model Profile {
-  id                 String    @id @unique
-  user               User      @relation(fields: [id], references: [id])
-  name               String
-  profilePicture     String?
-  bio                String?
-  locationId         Int?
-  location           Location? @relation(fields: [locationId], references: [id])
-  proofOfResidence   String?
-  proofOfIdentity    String?
-  car                Car[]
-  rental             Rental[]
-  listings           Listing[]
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  verificationStatus Boolean   @default(false)
+  id             String    @id @unique
+  user           User      @relation(fields: [id], references: [id])
+  name           String
+  profilePicture String?
+  bio            String?
+  locationId     Int?
+  location       Location? @relation(fields: [locationId], references: [id])
+
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  car                   Car[]
+  rental                Rental[]
+  listings              Listing[]
+  idVerification        IdentityVerification[]
+  residenceVerification ResidenceVerification[]
+}
+
+model IdentityVerification {
+  id               String  @id @unique
+  profile          Profile @relation(fields: [id], references: [id])
+  cameraImage      String
+  identityDocument String
+}
+
+model ResidenceVerification {
+  id          String  @id @unique
+  user        Profile @relation(fields: [id], references: [id])
+  utilityBill String
+  affidavity  String?
+  status      Status  @default(PENDING)
 }
 
 model Car {
-  owner               Profile  @relation(fields: [ownerId], references: [id])
-  id                  String   @id @default(uuid())
-  ownerId             String
-  make                String
-  model               String
-  type                String
-  year                Int
-  color               String
-  regNumber           String   @unique
-  frontView           String
-  backView            String
-  sideView            String?
+  owner           Profile           @relation(fields: [ownerId], references: [id])
+  id              String            @id @default(uuid())
+  ownerId         String
+  make            String
+  model           String
+  type            String
+  year            Int
+  color           String
+  regNumber       String            @unique
+  frontView       String
+  backView        String
+  sideView        String
+  interiorView1   String
+  interiorView2   String?
+  interiorView3   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  carVerification CarVerification[]
+}
+
+model CarVerification {
+  id                  String @id @unique
+  car                 Car    @relation(fields: [id], references: [id])
   proofOfRadioLicense String
   proofOfInsurance    String
-  verificationStatus  Boolean  @default(false)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  status              Status @default(PENDING)
 }
 
 model Listing {
@@ -105,3 +135,4 @@ model Location {
   profile Profile[]
   listing Listing[]
 }
+
