@@ -3,7 +3,7 @@ export interface User {
   password: string;
 }
 
-export interface Profile extends Location {
+export interface Profile extends LocationInterface {
   id: string;
   name: string;
   profilePicture?: string | null;
