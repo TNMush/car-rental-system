@@ -46,15 +46,17 @@ model Profile {
 }
 
 model IdentityVerification {
-  id               String  @id @unique
-  profile          Profile @relation(fields: [id], references: [id])
+  id               String  @id @unique @default(uuid())
+  profileId        String
+  profile          Profile @relation(fields: [profileId], references: [id])
   cameraImage      String
   identityDocument String
 }
 
 model ResidenceVerification {
   id          String  @id @unique
-  user        Profile @relation(fields: [id], references: [id])
+  residenceId String
+  user        Profile @relation(fields: [residenceId], references: [id])
   utilityBill String
   affidavity  String?
   status      Status  @default(PENDING)
@@ -66,7 +68,7 @@ model Car {
   ownerId         String
   make            String
   model           String
-  type            String
+  type            String 
   year            Int
   color           String
   regNumber       String            @unique
