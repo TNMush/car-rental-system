@@ -86,7 +86,10 @@ export async function POST(request: NextRequest) {
     // Validation
     const validation = createListingSchema.safeParse(requestBody);
     if (!validation.success)
-      return NextResponse.json({ message: validation.error }, { status: 400 });
+      return NextResponse.json(
+        { message: validation.error.message },
+        { status: 400 }
+      );
 
     // Execute as transaction
     const newListing = await prisma.$transaction(async (prisma) => {

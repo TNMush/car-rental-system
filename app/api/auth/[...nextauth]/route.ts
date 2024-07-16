@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { schema } from "./schema";
 import prisma from "@/prisma/client";
-import { LoginInterface } from "@/interfaces";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { User } from "@/interfaces";
 
 export async function POST(request: NextRequest) {
   try {
-    const loginDetails: LoginInterface = await request.json();
+    const loginDetails: User = await request.json();
 
     // 1. Validation
     const validation = schema.safeParse(loginDetails);
     if (!validation.success) {
-      return NextResponse.json(validation.error.errors, { status: 400 });
+      return NextResponse.json(validation.error.message, { status: 400 });
     }
 
     // 2. Check if user exists

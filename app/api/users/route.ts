@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const validation = schema.safeParse(newUser);
 
   if (!validation.success)
-    return NextResponse.json(validation.error.errors, { status: 400 });
+    return NextResponse.json(validation.error.message, { status: 400 });
   //Otherwise save user
   const hashedPassword = await bycrpt.hash(newUser.password, 10);
 

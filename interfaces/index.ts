@@ -1,21 +1,14 @@
 export interface User {
   email: string;
   password: string;
-  name: string;
-  image?: string;
-  profile?: Profile;
 }
-export interface LoginInterface
-  extends Omit<User, "name" | "image" | "profile"> {}
 
-export interface Profile {
-  bio?: string;
-  location?: string;
-  userId: string;
-  user: User;
-  verificationStatus: boolean;
-  proofOfResidence?: string;
-  proofOfIdentity?: string;
+export interface Profile extends Location {
+  id: string;
+  name: string;
+  profilePicture?: string | null;
+  bio?: string | null;
+  locationId?: number | null;
 }
 export interface listingRequestInterface {
   location?: string;
