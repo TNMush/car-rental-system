@@ -9,7 +9,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const requestBody = await request.json();
-
+    console.log(requestBody);
     // 1. Validation
     const validation = ResidenceVerificationSchema.safeParse(requestBody);
     if (!validation.success) {
