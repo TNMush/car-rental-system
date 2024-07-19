@@ -55,8 +55,8 @@ model IdentityVerification {
 
 model ResidenceVerification {
   id          String  @id @unique
-  profileId String
-  profile        Profile @relation(fields: [profileId], references: [id])
+  profileId   String
+  profile     Profile @relation(fields: [profileId], references: [id])
   utilityBill String
   affidavity  String?
   status      Status  @default(PENDING)
@@ -68,7 +68,7 @@ model Car {
   ownerId         String
   make            String
   model           String
-  type            String 
+  type            String
   year            Int
   color           String
   regNumber       String            @unique
