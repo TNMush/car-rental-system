@@ -1,6 +1,10 @@
 import prisma from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { IdentityVerificationSchema } from "./schema";
+import {
+  AdminIdentityVerificationInterface,
+  AdminIdentityVerificationSchema,
+  IdentityVerificationSchema,
+} from "./schema";
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,6 +70,54 @@ export async function POST(request: NextRequest) {
 
     // 5. Return the created or updated identity verification
     return NextResponse.json(newIdentityVerification, { status: 201 });
+  } catch (error) {
+    console.log("Unexpected error occurred", error);
+    return NextResponse.json(
+      { error: `Unexpected error occurred: ${error}` },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const requestBody: AdminIdentityVerificationInterface =
+      await request.json();
+
+    // 1. Validation
+    const validation = AdminIdentityVerificationSchema.safeParse(requestBody);
+    if (!validation.success) {
+      return NextResponse.json(
+        { message: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    // 2. Check if identity verification exists
+    const existingVerification = await prisma.identityVerification.findFirst({
+      where: {
+        id: requestBody.id,
+      },
+    });
+    if (!existingVerification) {
+      return NextResponse.json(
+        { message: "Identity verification doesn't exist" },
+        { status: 404 }
+      );
+    }
+
+    // 3. Update the status of the identity verification
+    const updatedVerification = await prisma.identityVerification.update({
+      where: {
+        id: requestBody.id,
+      },
+      data: {
+        status: requestBody.status,
+      },
+    });
+
+    // 4. Return the updated identity verification
+    return NextResponse.json(updatedVerification, { status: 200 });
   } catch (error) {
     console.log("Unexpected error occurred", error);
     return NextResponse.json(

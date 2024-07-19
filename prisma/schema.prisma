@@ -51,6 +51,7 @@ model IdentityVerification {
   profile          Profile @relation(fields: [profileId], references: [id])
   cameraImage      String
   identityDocument String
+  status           Status  @default(PENDING)
 }
 
 model ResidenceVerification {
