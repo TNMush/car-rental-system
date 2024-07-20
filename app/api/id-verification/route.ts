@@ -3,12 +3,22 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   AdminIdentityVerificationInterface,
   AdminIdentityVerificationSchema,
+  IdentityVerification,
   IdentityVerificationSchema,
 } from "./schema";
 
 export async function POST(request: NextRequest) {
   try {
-    const requestBody = await request.json();
+    const requestBody: IdentityVerification = await request.json();
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Profile id is required" },
+        { status: 400 }
+      );
+    }
 
     // 1. Validation
     const validation = IdentityVerificationSchema.safeParse(requestBody);
@@ -22,7 +32,7 @@ export async function POST(request: NextRequest) {
     // 2. Check if profile exists
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
     if (!profile) {
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
     // 3. Check if identity verification already submitted
     const existingVerification = await prisma.identityVerification.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
 
@@ -45,7 +55,7 @@ export async function POST(request: NextRequest) {
       // 4. Update existing IdentityVerification
       newIdentityVerification = await prisma.identityVerification.update({
         where: {
-          id: requestBody.id,
+          id,
         },
         data: {
           cameraImage: requestBody.cameraImage,
@@ -56,12 +66,12 @@ export async function POST(request: NextRequest) {
       // 4. Create new IdentityVerification
       newIdentityVerification = await prisma.identityVerification.create({
         data: {
-          id: requestBody.id,
+          id,
           cameraImage: requestBody.cameraImage,
           identityDocument: requestBody.identityDocument,
           profile: {
             connect: {
-              id: requestBody.id,
+              id: id,
             },
           },
         },
@@ -83,6 +93,14 @@ export async function PATCH(request: NextRequest) {
   try {
     const requestBody: AdminIdentityVerificationInterface =
       await request.json();
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { message: "Identity verification id is required" },
+        { status: 400 }
+      );
+    }
 
     // 1. Validation
     const validation = AdminIdentityVerificationSchema.safeParse(requestBody);
@@ -96,7 +114,7 @@ export async function PATCH(request: NextRequest) {
     // 2. Check if identity verification exists
     const existingVerification = await prisma.identityVerification.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
     if (!existingVerification) {
@@ -109,7 +127,7 @@ export async function PATCH(request: NextRequest) {
     // 3. Update the status of the identity verification
     const updatedVerification = await prisma.identityVerification.update({
       where: {
-        id: requestBody.id,
+        id,
       },
       data: {
         status: requestBody.status,
