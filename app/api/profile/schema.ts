@@ -10,3 +10,10 @@ export const ProfileSchema = z.object({
 });
 
 export type Profile = z.infer<typeof ProfileSchema>;
+
+// Define Zod schema for Patching Profile (Profile with name optional)
+export const PatchingProfileSchema = ProfileSchema.omit({ name: true }).merge(
+  z.object({ name: z.string().optional() })
+);
+
+export type PatchingProfile = z.infer<typeof PatchingProfileSchema>;

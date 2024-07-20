@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Profile, ProfileSchema } from "./schema";
+import {
+  PatchingProfile,
+  PatchingProfileSchema,
+  Profile,
+  ProfileSchema,
+} from "./schema";
 import prisma from "@/prisma/client";
 
 export async function POST(request: NextRequest) {
@@ -90,7 +95,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const requestBody: Profile = await request.json();
+    const requestBody: PatchingProfile = await request.json();
 
     //get id from search params
     const id = new URL(request.url).searchParams.get("id");
@@ -102,7 +107,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 1. Validation
-    const validation = ProfileSchema.safeParse(requestBody);
+    const validation = PatchingProfileSchema.safeParse(requestBody);
     if (!validation.success) {
       return NextResponse.json(
         { message: validation.error.errors },
