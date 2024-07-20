@@ -1,5 +1,4 @@
-import exp from "constants";
-import { date, z } from "zod";
+import { z } from "zod";
 
 export const RentalSchema = z.object({
   id: z.string().uuid(),
