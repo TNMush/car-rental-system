@@ -4,7 +4,6 @@ export interface User {
 }
 
 export interface Profile extends LocationInterface {
-  id: string;
   name: string;
   profilePicture?: string | null;
   bio?: string | null;

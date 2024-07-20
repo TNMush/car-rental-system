@@ -1,11 +1,19 @@
-import { Profile } from "@/interfaces";
 import { NextRequest, NextResponse } from "next/server";
-import { ProfileSchema } from "./schema";
+import { Profile, ProfileSchema } from "./schema";
 import prisma from "@/prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
     const requestBody: Profile = await request.json();
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
 
     // 1. Validation
     const validation = ProfileSchema.safeParse(requestBody);
@@ -19,7 +27,7 @@ export async function POST(request: NextRequest) {
     // 2. Check if user exists
     const user = await prisma.user.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
     if (!user) {
@@ -31,7 +39,7 @@ export async function POST(request: NextRequest) {
     //2.1 Check if profile already exists
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
 
@@ -56,7 +64,7 @@ export async function POST(request: NextRequest) {
       // Create Profile
       const newProfile = await transaction.profile.create({
         data: {
-          id: requestBody.id,
+          id: id,
           name: requestBody.name,
           bio: requestBody.bio ? requestBody.bio : null,
           locationId: locationId,
@@ -84,6 +92,15 @@ export async function PATCH(request: NextRequest) {
   try {
     const requestBody: Profile = await request.json();
 
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
     // 1. Validation
     const validation = ProfileSchema.safeParse(requestBody);
     if (!validation.success) {
@@ -96,7 +113,7 @@ export async function PATCH(request: NextRequest) {
     // 2. Check if user exists
     const user = await prisma.user.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
     if (!user) {
@@ -109,7 +126,7 @@ export async function PATCH(request: NextRequest) {
     // 3. Check if profile exists
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
     if (!profile) {
@@ -156,7 +173,7 @@ export async function PATCH(request: NextRequest) {
       // Update Profile
       const updatedProfile = await transaction.profile.update({
         where: {
-          id: requestBody.id,
+          id,
         },
         data: updateData,
       });
@@ -177,8 +194,8 @@ export async function PATCH(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("id");
+    //get id from search params
+    const userId = new URL(request.url).searchParams.get("id");
 
     if (!userId) {
       return NextResponse.json(

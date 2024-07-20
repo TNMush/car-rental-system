@@ -6,6 +6,12 @@ import { schema } from "./schema";
 
 export async function POST(request: NextRequest) {
   const newUser: User = await request.json();
+
+  //validation
+  const validation = schema.safeParse(newUser);
+  if (!validation.success)
+    return NextResponse.json(validation.error.message, { status: 400 });
+
   //Check if user already exists
   let user = await prisma.user.findFirst({
     where: {
@@ -14,11 +20,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (user) return NextResponse.json("User already exists", { status: 409 });
-  //validation
-  const validation = schema.safeParse(newUser);
 
-  if (!validation.success)
-    return NextResponse.json(validation.error.message, { status: 400 });
   //Otherwise save user
   const hashedPassword = await bycrpt.hash(newUser.password, 10);
 
