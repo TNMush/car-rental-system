@@ -1,45 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Car, carSchema } from "./schema";
+import { Car, CarSchema } from "./schema";
 import prisma from "@/prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
-    const requestBody = await request.json();
-
-    //Validate the request body
-
-    const validation = carSchema.safeParse(requestBody);
-    if (!validation.success) {
-      return NextResponse.json(validation.error.message, { status: 400 });
+    const requestBody: Car = await request.json();
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id) {
+      return NextResponse.json("Id is required", { status: 400 });
     }
-
     //Does profile exist?
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
-
     if (!profile) {
       return NextResponse.json("Profile does not exist", { status: 404 });
     }
 
-    //Does car already exist?
-    const existingCar = await prisma.car.findFirst({
+    //Validate the request body
+
+    const validation = CarSchema.safeParse(requestBody);
+    if (!validation.success) {
+      return NextResponse.json(validation.error.message, { status: 400 });
+    }
+    //search car table to see if reg number is unique
+    const car = await prisma.car.findFirst({
       where: {
-        id: requestBody.id,
+        regNumber: requestBody.regNumber,
       },
     });
 
-    if (existingCar) {
-      return NextResponse.json("Car already exists", { status: 400 });
+    if (car) {
+      return NextResponse.json("Car with this reg number already exists", {
+        status: 400,
+      });
     }
 
     //Create new car
     const newCar = await prisma.car.create({
       data: {
-        id: requestBody.id,
-        ownerId: requestBody.ownerId,
+        ownerId: id,
         make: requestBody.make,
         model: requestBody.model,
         year: requestBody.year,
@@ -69,8 +72,8 @@ export async function GET(request: NextRequest) {
     // Build a dynamic where clause based on query parameters
     const whereClause: { [key: string]: string | number } = {};
 
-    if (searchParams.has("id")) {
-      whereClause.id = searchParams.get("id")!;
+    if (searchParams.has("carId")) {
+      whereClause.id = searchParams.get("carId")!;
     }
     if (searchParams.has("color")) {
       whereClause.color = searchParams.get("color")!;
@@ -112,16 +115,15 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const requestBody = await request.json();
-
-    if (requestBody.id === undefined) {
-      return NextResponse.json("Car id is required", { status: 400 });
+    const requestBody: Car = await request.json();
+    const carId = new URL(request.url).searchParams.get("carId");
+    if (!carId) {
+      return NextResponse.json("Id is required", { status: 400 });
     }
-
     //Does car exist?
     const car = await prisma.car.findFirst({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
 
@@ -162,11 +164,11 @@ export async function PATCH(request: NextRequest) {
     }
     if (requestBody.interiorView3 !== undefined) {
       // Ensure optional interiorView3 is handled
-      updateData.interiorView3 = requestBody.interiorView3 || null;
+      updateData.interiorView3 = requestBody.interiorView3;
     }
     const updatedCar = await prisma.car.update({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
       data: updateData,
     });
@@ -180,16 +182,16 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const requestBody = await request.json();
+    const carId = new URL(request.url).searchParams.get("carId");
 
-    if (requestBody.id === undefined) {
+    if (!carId) {
       return NextResponse.json("Car id is required", { status: 400 });
     }
 
     //Does car exist?
     const car = await prisma.car.findFirst({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
 
@@ -200,11 +202,11 @@ export async function DELETE(request: NextRequest) {
     //Delete car
     await prisma.car.delete({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
 
-    return NextResponse.json("Car deleted", { status: 200 });
+    return NextResponse.json({}, { status: 200 });
   } catch (error) {
     console.error("Error in login endpoint:", error);
     return NextResponse.json("Internal Server Error", { status: 500 });

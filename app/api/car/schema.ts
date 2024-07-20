@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-export const carSchema = z.object({
-  id: z.string().uuid(),
-  ownerId: z.string().uuid(),
+export const CarSchema = z.object({
   make: z.string(),
   model: z.string(),
   year: z.number(),
@@ -18,8 +16,9 @@ export const carSchema = z.object({
 });
 
 export const AdminCarSchema = z.object({
-  id: z.string().uuid(),
   type: z.string(),
 });
 
-export type Car = z.infer<typeof carSchema>;
+export type Car = z.infer<typeof CarSchema>;
+
+export type AdminCar = z.infer<typeof AdminCarSchema>;
