@@ -1,14 +1,13 @@
-import { User } from "@/interfaces";
 import prisma from "@/prisma/client";
-import { NextRequest, NextResponse } from "next/server";
 import bycrpt from "bcrypt";
-import { schema } from "./schema";
+import { NextRequest, NextResponse } from "next/server";
+import { User, UserSchema } from "./schema";
 
 export async function POST(request: NextRequest) {
   const newUser: User = await request.json();
 
   //validation
-  const validation = schema.safeParse(newUser);
+  const validation = UserSchema.safeParse(newUser);
   if (!validation.success)
     return NextResponse.json(validation.error.message, { status: 400 });
 

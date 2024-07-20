@@ -1,14 +1,3 @@
-export interface User {
-  email: string;
-  password: string;
-}
-
-export interface Profile extends LocationInterface {
-  name: string;
-  profilePicture?: string | null;
-  bio?: string | null;
-  locationId?: number | null;
-}
 export interface listingRequestInterface {
   location?: string;
   color?: string;
