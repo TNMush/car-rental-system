@@ -28,6 +28,52 @@ export async function GET(request: NextRequest) {
         location: requestBody.location,
       };
     }
+    if (requestBody.color) {
+      whereClause.listed = {
+        car: {
+          some: {
+            color: requestBody.color,
+          },
+        },
+      };
+    }
+    if (requestBody.model) {
+      whereClause.listed = {
+        car: {
+          some: {
+            model: requestBody.model,
+          },
+        },
+      };
+    }
+    if (requestBody.year) {
+      whereClause.listed = {
+        car: {
+          some: {
+            year: requestBody.year,
+          },
+        },
+      };
+    }
+    if (requestBody.make) {
+      whereClause.listed = {
+        car: {
+          some: {
+            make: requestBody.make,
+          },
+        },
+      };
+    }
+    if (requestBody.type) {
+      whereClause.listed = {
+        car: {
+          some: {
+            type: requestBody.type,
+          },
+        },
+      };
+    }
+
     if (requestBody.from && requestBody.to) {
       whereClause.from = {
         gte: new Date(requestBody.from),

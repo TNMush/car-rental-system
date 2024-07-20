@@ -12,6 +12,10 @@ export interface Profile extends LocationInterface {
 }
 export interface listingRequestInterface {
   location?: string;
+  color?: string;
+  model?: string;
+  year?: string;
+  make?: string;
   type?: string;
   from?: string;
   to?: string;
