@@ -11,17 +11,17 @@ export async function POST(request: NextRequest) {
   try {
     const requestBody: CarVerification = await request.json();
 
-    //Validate the request body
-    const validation = CarVerificationSchema.safeParse(requestBody);
+    //get if from search params
+    const id = new URL(request.url).searchParams.get("id");
 
-    if (!validation.success) {
-      return NextResponse.json(validation.error.message, { status: 400 });
+    if (!id) {
+      return NextResponse.json("Profile ID is required", { status: 400 });
     }
 
     //Does profile exist?
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.id,
+        id,
       },
     });
 
@@ -29,12 +29,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json("Profile does not exist", { status: 404 });
     }
 
-    //Does Car exist?
+    //get carId from search params
+    const carId = new URL(request.url).searchParams.get("carId");
+
+    if (!carId) {
+      return NextResponse.json("Car ID is required", { status: 400 });
+    }
+
     const existingCar = await prisma.car.findFirst({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
+
+    //Does Car exist?
 
     if (!existingCar) {
       return NextResponse.json("Car does not exist", { status: 404 });
@@ -43,7 +51,7 @@ export async function POST(request: NextRequest) {
     //Does CarVerification already exist?
     const existingCarVerification = await prisma.carVerification.findFirst({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
 
@@ -53,10 +61,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    //Validate the request body
+    const validation = CarVerificationSchema.safeParse(requestBody);
+
+    if (!validation.success) {
+      return NextResponse.json(validation.error.message, { status: 400 });
+    }
+
     //Create new car verification
     const newCarVerification = await prisma.carVerification.create({
       data: {
-        id: requestBody.id,
+        id: carId,
         proofOfRadioLicense: requestBody.proofOfRadioLicense,
         proofOfInsurance: requestBody.proofOfInsurance,
       },
@@ -72,18 +87,23 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const requestBody: AdminCarVerification = await request.json();
-
-    //Validate the request body
-    const validation = AdminCarVerificationSchema.safeParse(requestBody);
-
-    if (!validation.success) {
-      return NextResponse.json(validation.error.message, { status: 400 });
+    //get id from search params
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id) {
+      return NextResponse.json("Car verification ID is required", {
+        status: 400,
+      });
+    }
+    //get carId from search params
+    const carId = new URL(request.url).searchParams.get("carId");
+    if (!carId) {
+      return NextResponse.json("Car ID is required", { status: 400 });
     }
 
     //Does CarVerification exist?
     const existingCarVerification = await prisma.carVerification.findFirst({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
     });
 
@@ -92,11 +112,17 @@ export async function PATCH(request: NextRequest) {
         status: 404,
       });
     }
+    //Validate the request body
+    const validation = AdminCarVerificationSchema.safeParse(requestBody);
+
+    if (!validation.success) {
+      return NextResponse.json(validation.error.message, { status: 400 });
+    }
 
     //Update CarVerification
     const updatedCarVerification = await prisma.carVerification.update({
       where: {
-        id: requestBody.id,
+        id: carId,
       },
       data: {
         status: requestBody.status,
