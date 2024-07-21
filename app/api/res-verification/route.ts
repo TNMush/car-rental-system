@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
     const requestBody: ResidenceVerification = await request.json();
 
     //get the user id from the request
-    const id = new URLSearchParams(request.url).get("id");
+    const id = new URL(request.url).searchParams.get("id");
 
     if (!id) {
+      console.log("User id is required", id);
       return NextResponse.json(
         { message: "User id is required" },
         { status: 400 }
@@ -84,7 +85,7 @@ export async function PATCH(request: NextRequest) {
       await request.json();
 
     //get the user id from the request
-    const id = new URLSearchParams(request.url).get("id");
+    const id = new URL(request.url).searchParams.get("id");
     if (!id) {
       return NextResponse.json(
         { message: "User id is required" },
@@ -138,6 +139,8 @@ export async function PATCH(request: NextRequest) {
           status: requestBody.status,
         },
       });
+
+    return NextResponse.json(updatedResidenceVerification, { status: 200 });
   } catch (error) {
     console.log("Unexpected error occurred", error);
     return NextResponse.json(
