@@ -1,13 +1,11 @@
 import { z } from "zod";
 
 export const ResidenceVerificationSchema = z.object({
-  id: z.string(),
   utilityBill: z.string(),
   affidavity: z.string().optional(),
 });
 
 export const AdminResidenceVerificationSchema = z.object({
-  id: z.string(),
   status: z.enum(["FAILED", "SUCCESS"]),
 });
 

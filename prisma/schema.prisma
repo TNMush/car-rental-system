@@ -56,8 +56,7 @@ model IdentityVerification {
 }
 
 model ResidenceVerification {
-  id          String  @id @unique
-  profileId   String
+  profileId   String  @id @unique
   profile     Profile @relation(fields: [profileId], references: [id])
   utilityBill String
   affidavity  String?
