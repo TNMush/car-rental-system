@@ -5,6 +5,100 @@ import prisma from "@/prisma/client";
 export async function POST(request: NextRequest) {
   try {
     const requestBody: Rental = await request.json();
+    //get profile id from search params
+    const profileId = new URL(request.url).searchParams.get("id");
+    if (!profileId) {
+      return NextResponse.json(
+        { message: "Profile ID not provided" },
+        { status: 400 }
+      );
+    }
+    //get listing id from search params
+    const listingId = new URL(request.url).searchParams.get("listing-id");
+    if (!listingId) {
+      return NextResponse.json(
+        { message: "Listing ID not provided" },
+        { status: 400 }
+      );
+    }
+    //check if profile exists
+    const profileExists = await prisma.profile.findFirst({
+      where: {
+        id: profileId,
+      },
+    });
+
+    if (!profileExists) {
+      return NextResponse.json(
+        { message: "Profile does not exist" },
+        { status: 404 }
+      );
+    }
+
+    //check if identity is verified
+    const idVerification = await prisma.identityVerification.findFirst({
+      where: {
+        profileId: profileId,
+      },
+    });
+    if (!idVerification) {
+      return NextResponse.json(
+        { message: "Identity not verified" },
+        { status: 403 }
+      );
+    }
+
+    if (idVerification.status !== "SUCCESS") {
+      return NextResponse.json(
+        { message: "Identity not verified" },
+        { status: 403 }
+      );
+    }
+    //check if residence is verified
+    const residenceVerification = await prisma.residenceVerification.findFirst({
+      where: {
+        profileId: profileId,
+      },
+    });
+    if (!residenceVerification) {
+      return NextResponse.json(
+        { message: "Residence not verified" },
+        { status: 403 }
+      );
+    }
+    if (residenceVerification.status !== "SUCCESS") {
+      return NextResponse.json(
+        { message: "Residence not verified" },
+        { status: 403 }
+      );
+    }
+
+    //check if listing exists
+    const listingExists = await prisma.listing.findFirst({
+      where: {
+        id: listingId,
+      },
+    });
+
+    if (!listingExists) {
+      return NextResponse.json(
+        { message: "Listing does not exist" },
+        { status: 404 }
+      );
+    }
+    //Rental already submitted?
+    const existingRental = await prisma.rental.findFirst({
+      where: {
+        listingId: listingId,
+      },
+    });
+    //don't update existing rental
+    if (existingRental) {
+      return NextResponse.json(
+        { message: "Rental already exists" },
+        { status: 409 }
+      );
+    }
 
     //validation
     const validation = RentalSchema.safeParse(requestBody);
@@ -16,39 +110,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    //Profile exists?
-    const profile = await prisma.profile.findFirst({
-      where: {
-        id: requestBody.id,
-      },
-    });
-
-    if (!profile) {
-      return NextResponse.json(
-        { message: "Profile doesn't exist" },
-        { status: 404 }
-      );
-    }
-    //Rental already submitted?
-    const existingRental = await prisma.rental.findFirst({
-      where: {
-        id: requestBody.id,
-      },
-    });
-    //don't update existing rental
-    if (existingRental) {
-      return NextResponse.json(
-        { message: "Rental already exists" },
-        { status: 409 }
-      );
-    }
-
     //Create new rental
     const newRental = await prisma.rental.create({
       data: {
-        id: requestBody.id,
-        listingId: requestBody.listingId,
-        renterId: requestBody.renterId,
+        listingId: listingId,
+        renterId: profileId,
         dateOfCollection: requestBody.dateOfCollection,
         dateOfReturn: requestBody.dateOfReturn,
         priceCharged: requestBody.priceCharged,
