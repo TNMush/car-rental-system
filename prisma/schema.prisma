@@ -47,8 +47,7 @@ model Profile {
 }
 
 model IdentityVerification {
-  id               String  @id @unique @default(uuid())
-  profileId        String
+  profileId        String  @id @unique
   profile          Profile @relation(fields: [profileId], references: [id])
   cameraImage      String
   identityDocument String
@@ -82,6 +81,7 @@ model Car {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   carVerification CarVerification[]
+  listing         Listing[]
 }
 
 model CarVerification {
@@ -93,9 +93,11 @@ model CarVerification {
 }
 
 model Listing {
-  id         String   @id @default(uuid())
+  id         String   @id @unique @default(uuid())
+  carId      String   @unique
+  car        Car      @relation(fields: [carId], references: [id])
   listed     Profile  @relation(fields: [listedBy], references: [id])
-  listedBy   String
+  listedBy   String   @unique
   location   Location @relation(fields: [locationId], references: [id])
   locationId Int
   from       DateTime

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // 3. Check if identity verification already submitted
     const existingVerification = await prisma.identityVerification.findFirst({
       where: {
-        id,
+        profileId: id,
       },
     });
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       // 4. Update existing IdentityVerification
       newIdentityVerification = await prisma.identityVerification.update({
         where: {
-          id,
+          profileId: id,
         },
         data: {
           cameraImage: requestBody.cameraImage,
@@ -66,14 +66,9 @@ export async function POST(request: NextRequest) {
       // 4. Create new IdentityVerification
       newIdentityVerification = await prisma.identityVerification.create({
         data: {
-          id,
+          profileId: id,
           cameraImage: requestBody.cameraImage,
           identityDocument: requestBody.identityDocument,
-          profile: {
-            connect: {
-              id: id,
-            },
-          },
         },
       });
     }
@@ -114,7 +109,7 @@ export async function PATCH(request: NextRequest) {
     // 2. Check if identity verification exists
     const existingVerification = await prisma.identityVerification.findFirst({
       where: {
-        id,
+        profileId: id,
       },
     });
     if (!existingVerification) {
@@ -127,7 +122,7 @@ export async function PATCH(request: NextRequest) {
     // 3. Update the status of the identity verification
     const updatedVerification = await prisma.identityVerification.update({
       where: {
-        id,
+        profileId: id,
       },
       data: {
         status: requestBody.status,
