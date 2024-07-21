@@ -97,6 +97,8 @@ export async function POST(request: NextRequest) {
       data: {
         ...validation.data,
         locationId: profile.locationId,
+        carId: carId,
+        listedBy: id,
       },
     });
 
