@@ -5,6 +5,23 @@ import prisma from "@/prisma/client";
 export async function POST(request: NextRequest) {
   try {
     const requestBody: Experience = await request.json();
+    // get id from search params
+    const reviewerId = new URL(request.url).searchParams.get("id");
+    if (!reviewerId) {
+      return NextResponse.json(
+        { message: "Reviewer ID is required" },
+        { status: 400 }
+      );
+    }
+    //rentalId from search params
+    const rentalId = new URL(request.url).searchParams.get("rental-id");
+    if (!rentalId) {
+      return NextResponse.json(
+        { message: "Rental ID is required" },
+        { status: 400 }
+      );
+    }
+
     // Validate the request body against the schema
     const validation = ExperienceSchema.safeParse(requestBody);
     if (!validation.success) {
@@ -17,7 +34,7 @@ export async function POST(request: NextRequest) {
     // profile exists?
     const profile = await prisma.profile.findFirst({
       where: {
-        id: requestBody.reviewerId,
+        id: reviewerId,
       },
     });
 
@@ -31,7 +48,7 @@ export async function POST(request: NextRequest) {
     // rental doesnt exist?
     const existingRental = await prisma.rental.findFirst({
       where: {
-        id: requestBody.rentalId,
+        id: rentalId,
       },
     });
 
@@ -44,7 +61,11 @@ export async function POST(request: NextRequest) {
 
     // Create the experience
     const experience = await prisma.experience.create({
-      data: requestBody,
+      data: {
+        ...requestBody,
+        reviewerId: reviewerId,
+        rentalId: rentalId,
+      },
     });
 
     return NextResponse.json(experience, { status: 201 });
@@ -56,7 +77,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get rentalId from query params;
-    const rentalId = new URL(request.url).searchParams.get("rentalId");
+    const rentalId = new URL(request.url).searchParams.get("rental-id");
 
     if (!rentalId) {
       return NextResponse.json(
@@ -81,6 +102,14 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const experienceId = new URL(request.url).searchParams.get("experience-id");
+    const reviewerId = new URL(request.url).searchParams.get("id");
+
+    if (!reviewerId) {
+      return NextResponse.json(
+        { message: "Reviewer ID is required" },
+        { status: 400 }
+      );
+    }
 
     if (!experienceId) {
       return NextResponse.json(
@@ -91,7 +120,7 @@ export async function DELETE(request: NextRequest) {
 
     // Check if the experience exists
     const existingExperience = await prisma.experience.findUnique({
-      where: { id: experienceId },
+      where: { id: experienceId, reviewerId: reviewerId },
     });
 
     if (!existingExperience) {
@@ -106,7 +135,7 @@ export async function DELETE(request: NextRequest) {
       where: { id: experienceId },
     });
 
-    return NextResponse.json({}, { status: 204 });
+    return NextResponse.json({}, { status: 200 });
   } catch (error) {
     console.error("Error deleting experience:", error);
     return NextResponse.json("Internal Server Error", { status: 500 });
